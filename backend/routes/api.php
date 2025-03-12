@@ -44,7 +44,7 @@ Route::post('/events/{event}/buy-ticket', [TicketController::class, 'buyTicket']
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/events', [EventController::class, 'index']); // 🔍 Recherche et filtres
-    Route::get('/events/recommended', [EventController::class, 'recommendedEvents']); // 🎯 Recommandations
+   
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{eventId}/register', [TicketController::class, 'registerForEvent']);

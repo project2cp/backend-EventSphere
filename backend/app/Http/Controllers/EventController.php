@@ -71,6 +71,7 @@ class EventController extends Controller
        //  Afficher un événement
     public function show($id) {
         $event = Event::findOrFail($id);
+        $event->increment('popularity');
         return response()->json($event);
     }
 
@@ -106,8 +107,8 @@ class EventController extends Controller
              $query->orderBy('popularity', 'desc');
          } elseif ($request->sort_by == 'date') {
              $query->orderBy('date', 'asc');
-         } elseif ($request->sort_by == 'price') {
-             $query->orderBy('price', 'asc');
+         } elseif ($request->sort_by == 'ticket_price') {
+             $query->orderBy('ticket_price', 'asc');
          }
      }
 
@@ -117,40 +118,6 @@ class EventController extends Controller
      return response()->json($events, 200);
  }
 
- // 📌 2. Recommandation d'événements basée sur les centres d'intérêt
- public function recommendedEvents()
- {
-     $user = Auth::user();
-    // Vérifier si l'utilisateur est authentifié
-    if (!$user) {
-        return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
-    }
 
-     // 🔹 Récupérer les événements auxquels l'utilisateur a participé
-     $attendedEventIds = $user->tickets()->pluck('event_id')->toArray();
-
-     if (empty($attendedEventIds)) {
-        return response()->json(['message' => 'Aucun événement recommandé.'], 200);
-    }
-     // 🔹 Récupérer les catégories des événements fréquentés
-     $favoriteCategories = Event::whereIn('id', $attendedEventIds)
-         ->pluck('category')
-         ->unique()
-         ->toArray();
-
- // Vérifier si des catégories ont été trouvées
- if (empty($favoriteCategories)) {
-    return response()->json(['message' => 'Aucune catégorie préférée trouvée.'], 200);
-}
-
-     // 🔹 Sélectionner des événements similaires en fonction des catégories
-     $recommendedEvents = Event::whereNotIn('id', $attendedEventIds)
-         ->whereIn('category', $favoriteCategories)
-         ->orderBy('date', 'asc')
-         ->take(5)
-         ->get();
-         dd($recommendedEvents);
-     return response()->json($recommendedEvents, 200);
- }
 
 }
