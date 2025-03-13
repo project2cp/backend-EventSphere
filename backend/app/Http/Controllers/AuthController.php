@@ -46,7 +46,7 @@ class AuthController extends Controller
 
         // Vérifier si le mot de passe est correct
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid password'], 401);
+            return response()->json(['pwd message' => 'Invalid password'], 401);
         }
 
         // Authentifier l'utilisateur et générer un token
