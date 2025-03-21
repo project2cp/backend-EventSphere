@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Organizer;
 use App\Models\Ticket;
-class User extends Authenticatable
+use Illuminate\Contracts\Auth\MustVerifyEmail; // ✅ Ajout pour la vérification des emails
+class User extends Authenticatable implements MustVerifyEmail // ✅ Activation de la vérification des emails
+
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens,HasFactory, Notifiable;

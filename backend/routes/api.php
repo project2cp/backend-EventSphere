@@ -6,7 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OrganizerController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventController;
-
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -44,10 +44,26 @@ Route::post('/events/{event}/buy-ticket', [TicketController::class, 'buyTicket']
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/events', [EventController::class, 'index']); // 🔍 Recherche et filtres
-   
+
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events/{eventId}/register', [TicketController::class, 'registerForEvent']);
     Route::post('/tickets/{ticketId}/refund', [TicketController::class, 'refundTicket']);
     Route::post('/tickets/{ticketId}/cancel', [TicketController::class, 'cancelRegistration']);
 });
+Route::get('/test', function () {
+    return response()->json(['message' => 'API fonctionne !']);
+});
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+        return response()->json(['message' => 'Email verified successfully']);
+    })->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return response()->json(['message' => 'Verification email sent']);
+    })->middleware('throttle:6,1')->name('verification.send');
+});
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
