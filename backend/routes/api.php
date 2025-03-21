@@ -24,14 +24,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/organizers/request', [OrganizerController::class, 'requestOrganizer']);
     Route::get('/organizers/profile', [OrganizerController::class, 'getProfile']);
     Route::put('/organizers/profile', [OrganizerController::class, 'updateProfile']);
-
-    Route::middleware('admin')->group(function () {
-        Route::put('/organizers/{id}/approve', [OrganizerController::class, 'approveOrganizer']);
-        Route::put('/organizers/{id}/reject', [OrganizerController::class, 'rejectOrganizer']);
-    });
 });
 
-Route::delete('/organizers/{id}', [OrganizerController::class, 'destroy']);
+Route::get('/organizers/verify/{token}', [OrganizerController::class, 'verifyEmail']);
+Route::delete('/organizers/delete', [OrganizerController::class, 'deleteOrganizer'])->middleware('auth:sanctum');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/events', [EventController::class, 'store']);
     Route::put('/events/{id}', [EventController::class, 'update']);
@@ -67,3 +64,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/organizers/add-admin', [OrganizerController::class, 'addAdmin']);
+});
+Route::delete('/organizers/admins/remove', [OrganizerController::class, 'removeAdmin'])->middleware('auth:sanctum');
+Route::get('/organizers/admins', [OrganizerController::class, 'listAdmins'])->middleware('auth:sanctum');
+Route::delete('/organizers/delete', [OrganizerController::class, 'deleteOrganizer'])->middleware('auth:sanctum');

@@ -10,11 +10,16 @@ class Organizer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'logo', 'description', 'category', 'status'
+        'user_id', 'logo', 'description', 'category', 'status','email_verification_token','document'
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+    public function admins()
+{
+    return $this->hasMany(EventAdmin::class);
+}
+
 }
