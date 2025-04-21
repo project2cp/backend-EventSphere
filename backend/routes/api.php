@@ -70,3 +70,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::delete('/organizers/admins/remove', [OrganizerController::class, 'removeAdmin'])->middleware('auth:sanctum');
 Route::get('/organizers/admins', [OrganizerController::class, 'listAdmins'])->middleware('auth:sanctum');
 Route::delete('/organizers/delete', [OrganizerController::class, 'deleteOrganizer'])->middleware('auth:sanctum');
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/events', [EventController::class, 'index']); // 🔍 Recherche et filtres
+});
