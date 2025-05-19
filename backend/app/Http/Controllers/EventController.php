@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
+use App\Notifications\EventNotification;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 class EventController extends Controller
 {
      // 🟢 1. Création d'un événement
@@ -34,6 +37,23 @@ class EventController extends Controller
          ]);
 
          return response()->json($event, 201);
+         // Notification data
+        $eventData = [
+            'title' => 'Nouvel Événement Créé',
+            'message' => 'Un nouvel événement "' . $event->name . '" a été ajouté.',
+            'event_id' => $event->id,
+        ];
+
+        Log::info('Envoi de la notification pour l\'événement : ' . $event->id);
+
+        // Envoyer la notification à tous les utilisateurs
+        foreach (User::all() as $user) {
+            $user->notify(new EventNotification($eventData));
+        }
+
+        Log::info('Notifications envoyées.');
+
+        return response()->json(['success' => 'Événement créé et notifications envoyées.']);
      }
 
      // 🟢 2. Mise à jour d'un événement
@@ -56,6 +76,19 @@ class EventController extends Controller
          $event->update($request->all());
 
          return response()->json($event, 200);
+
+         $eventData = [
+            'title' => 'Événement Mis à Jour',
+            'message' => 'L\'événement "' . $event->name . '" a été modifié.',
+            'event_id' => $event->id,
+        ];
+    
+        foreach (User::all() as $user) {
+            $user->notify(new EventNotification($eventData));
+        }
+    
+        return response()->json(['success' => 'Événement mis à jour et notifications envoyées.']);
+
      }
 
      // 🟢 3. Suppression d'un événement

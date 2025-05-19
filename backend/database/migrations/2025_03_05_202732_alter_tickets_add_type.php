@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tickets', function (Blueprint $table) {
-            $table->string('type')->default('Regular')->change();
+            if (!Schema::hasColumn('tickets', 'type')) {
+                $table->string('type')->default('Regular'); // Ajoute la colonne si elle n'existe pas
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tickets', function (Blueprint $table) {
-            $table->string('type')->change();
+            if (Schema::hasColumn('tickets', 'type')) {
+                $table->dropColumn('type'); // Supprime la colonne lors du rollback
+            }
         });
     }
 };

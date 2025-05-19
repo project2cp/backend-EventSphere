@@ -6,6 +6,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OrganizerController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DashboardController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -51,3 +54,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tickets/{ticketId}/refund', [TicketController::class, 'refundTicket']);
     Route::post('/tickets/{ticketId}/cancel', [TicketController::class, 'cancelRegistration']);
 });
+
+
+//chat participants-organisateurs
+Route::post('/send-message', [MessageController::class, 'sendMessage']);
+Route::get('/messages/{sender_id}/{receiver_id}', [MessageController::class, 'getMessages']);
+
+//notifications push
+//Route::middleware('auth')->get('/notifications', [NotificationController::class, 'index']);
+//Route::get('/notifications', [NotificationController::class, 'index']);
+
+
+
+//Dashboard
+Route::middleware('auth:sanctum')->get('/dashboard/summary', [DashboardController::class, 'summary']);
