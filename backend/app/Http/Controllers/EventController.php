@@ -10,6 +10,9 @@ class EventController extends Controller
      // 🟢 1. Création d'un événement
      public function store(Request $request)
      {
+        if (!Auth::user()->is_organizer) {
+            return response()->json(['error' => 'Unauthorized: Only organizers can create events'], 403);
+        }
          $request->validate([
              'title' => 'required|string|max:255',
              'description' => 'nullable|string',
