@@ -7,6 +7,7 @@ use App\Http\Controllers\OrganizerController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\DashboardController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -73,3 +74,4 @@ Route::delete('/organizers/delete', [OrganizerController::class, 'deleteOrganize
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/events', [EventController::class, 'index']); // 🔍 Recherche et filtres
 });
+Route::middleware('auth:sanctum')->get('/dashboard/summary', [DashboardController::class, 'summary']);
