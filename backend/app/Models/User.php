@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Organizer;
 use App\Models\Ticket;
-use Illuminate\Contracts\Auth\MustVerifyEmail; // ✅ Ajout pour la vérification des emails
-class User extends Authenticatable implements MustVerifyEmail // ✅ Activation de la vérification des emails
+use Illuminate\Auth\MustVerifyEmail;
+ // ✅ Ajout pour la vérification des emails
+class User extends Authenticatable  // ✅ Activation de la vérification des emails
 
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens,HasFactory, Notifiable;
+    use HasApiTokens,HasFactory, Notifiable,MustVerifyEmail;
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail // ✅ Activation 
         'name',
         'email',
         'password','profile_photo', 'bio', 'interests','is_organizer',  'phone_number',
-        'location',     
+        'location',
     ];
 
     /**

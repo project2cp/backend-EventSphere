@@ -10,10 +10,10 @@ use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Auth\Events\Verified;
 
 class AuthController extends Controller
 {
-
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -32,10 +32,10 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-    // Envoi de l'email de vérification
-    $user->sendEmailVerificationNotification();
-    return response()->json(['message' => 'User registered successfully. Check your email for verification.'], 201);
+        $user->sendEmailVerificationNotification();
+        return response()->json(['message' => 'User registered successfully. Check your email for verification.'], 201);
     }
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -43,67 +43,84 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Vérifier si l'email existe
         $user = User::where('email', $request->email)->first();
         if (!$user) {
             return response()->json(['message' => 'Email not found'], 404);
         }
 
-        // Vérifier si le mot de passe est correct
         if (!Hash::check($request->password, $user->password)) {
             return response()->json(['pwd message' => 'Invalid password'], 401);
         }
 
-        // Authentifier l'utilisateur et générer un token
         Auth::login($user);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json(['access_token' => $token, 'token_type' => 'Bearer']);
     }
 
-public function logout(Request $request)
-{
-    $request->user()->tokens()->delete();
-    return response()->json(['message' => 'Successfully logged out']);
-}
-public function forgotPassword(Request $request)
-{
-    $request->validate(['email' => 'required|email']);
+    public function logout(Request $request)
+    {
+        $request->user()->tokens()->delete();
+        return response()->json(['message' => 'Successfully logged out']);
+    }
 
-    $status = Password::sendResetLink($request->only('email'));
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
 
-    return $status === Password::RESET_LINK_SENT
-        ? response()->json(['message' => 'Password reset link sent'])
-        : response()->json(['message' => 'Error sending password reset link'], 400);
-}
+        $status = Password::sendResetLink($request->only('email'));
 
-public function resetPassword(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'token' => 'required',
-        'password' => 'required|min:8|confirmed',
-    ]);
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['message' => 'Password reset link sent'])
+            : response()->json(['message' => 'Error sending password reset link'], 400);
+    }
 
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->forceFill([
-                'password' => Hash::make($password),
-                'remember_token' => Str::random(60),
-            ])->save();
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
 
-            event(new PasswordReset($user));
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Password has been reset'])
+            : response()->json(['message' => 'Invalid token'], 400);
+    }
+
+    public function verifyEmail(Request $request)
+    {
+        $user = User::findOrFail($request->route('id'));
+
+        if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
+            return redirect()->away('http://localhost:3002/profile?verification_error=invalid_token');
         }
-    );
 
-    return $status === Password::PASSWORD_RESET
-        ? response()->json(['message' => 'Password has been reset'])
-        : response()->json(['message' => 'Invalid token'], 400);
-}
-protected function redirectTo()
-{
-    return '/home'; //  Change vers une autre route API si nécessaire
-}
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->away('http://localhost:3002/profile?verification_error=already_verified');
+        }
 
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        return redirect()->away('http://localhost:3002/profile?verification=success');
+    }
+
+    protected function redirectTo()
+    {
+        return '/home';
+    }
 }

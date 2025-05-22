@@ -52,17 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/test', function () {
     return response()->json(['message' => 'API fonctionne !']);
 });
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill();
-        return response()->json(['message' => 'Email verified successfully']);
-    })->name('verification.verify');
-
-    Route::post('/email/verification-notification', function (Request $request) {
-        $request->user()->sendEmailVerificationNotification();
-        return response()->json(['message' => 'Verification email sent']);
-    })->middleware('throttle:6,1')->name('verification.send');
-});
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    ->name('verification.verify');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
