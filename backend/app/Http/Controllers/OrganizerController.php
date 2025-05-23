@@ -20,6 +20,8 @@ class OrganizerController extends Controller
             'description' => 'nullable|string',
             'logo' => 'nullable|image|max:2048',
             'document' => 'nullable|mimes:pdf,jpg,png|max:5120', // Accepte PDF et images (max 5MB)
+            'organization_type' => 'required|string|in:Club,Enterprise,Non-Profit,Government,Educational',
+            'organization_name' => 'required|string|max:255'
         ]);
 
         $user = Auth::user();
@@ -40,6 +42,8 @@ class OrganizerController extends Controller
             'status' => 'pending',
             'email_verification_token' => $verificationToken,
             'document' => $documentPath,  // Ajout du document
+            'organization_type' => $request->organization_type,
+             'organization_name' => $request->organization_name,
         ]);
 
         // Envoyer un email de vérification (Simulation)
@@ -96,6 +100,8 @@ class OrganizerController extends Controller
             'logo' => 'nullable|image|max:2048',
             'category' => 'required|string',
             'document' => 'nullable|mimes:pdf,jpg,png|max:5120', // Vérification du fichier
+            'organization_type' => 'required|string|in:Club,Enterprise,Non-Profit,Government,Educational',
+            'organization_name' => 'required|string|max:255'
         ]);
 
         if ($request->hasFile('logo')) {

@@ -10,7 +10,7 @@ class Organizer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'logo', 'description', 'category', 'status','email_verification_token','document'
+        'user_id', 'logo', 'description', 'category', 'status','email_verification_token','document','organization_type', 'organization_name',
     ];
 
     public function user(): BelongsTo
