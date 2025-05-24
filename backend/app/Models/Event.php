@@ -10,7 +10,7 @@ class Event extends Model
 
     protected $fillable = [
         'organizer_id', 'title', 'description', 'date',
-        'location', 'ticket_limit', 'is_paid', 'ticket_price','category','popularity'
+        'location', 'ticket_limit', 'is_paid', 'ticket_price','category','popularity', 'image_path'
     ];
     public function tickets()
     {
