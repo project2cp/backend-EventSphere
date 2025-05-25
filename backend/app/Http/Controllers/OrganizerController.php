@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use App\Models\EventAdmin;
 class OrganizerController extends Controller
 {
-    // 1️⃣ Demande pour devenir organisateur
+    // Demande pour devenir organisateur
     public function requestOrganizer(Request $request)
     {
         $request->validate([
@@ -55,7 +55,7 @@ class OrganizerController extends Controller
         return response()->json(['message' => 'Demande soumise. Vérifiez votre email.', 'organizer' => $organizer], 201);
     }
 
-    // 2️⃣ Vérification automatique par email
+    // Vérification automatique par email
     public function verifyEmail($token)
     {
         $organizer = Organizer::where('email_verification_token', $token)->first();
@@ -74,7 +74,7 @@ class OrganizerController extends Controller
         return response()->json(['message' => 'Vérification réussie, vous êtes maintenant organisateur']);
     }
 
-    // 3️⃣ Récupérer le profil de l’organisateur
+    // Récupérer le profil de l’organisateur
     public function getProfile()
     {
         $organizer = Auth::user()->organizer;
@@ -86,7 +86,7 @@ class OrganizerController extends Controller
         return response()->json($organizer);
     }
 
-    // 4️⃣ Modifier le profil de l’organisateur
+    // Modifier le profil de l’organisateur
     public function updateProfile(Request $request)
     {
         $organizer = Auth::user()->organizer;

@@ -17,4 +17,10 @@ class Event extends Model
         return $this->hasMany(Ticket::class);
     }
 
+
+public function organizer()
+{
+    return $this->belongsTo(\App\Models\Organizer::class, 'organizer_id', 'user_id');
+}
+
 }

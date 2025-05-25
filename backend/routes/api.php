@@ -66,3 +66,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/events', [EventController::class, 'index']); // 🔍 Recherche et filtres
 });
 Route::middleware('auth:sanctum')->get('/dashboard/summary', [DashboardController::class, 'summary']);
+Route::get('/tickets', [TicketController::class, 'getUserTickets'])->middleware('auth:api');

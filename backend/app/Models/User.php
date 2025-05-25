@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Organizer;
 use App\Models\Ticket;
 use Illuminate\Auth\MustVerifyEmail;
- // ✅ Ajout pour la vérification des emails
-class User extends Authenticatable  // ✅ Activation de la vérification des emails
+ // Ajout pour la vérification des emails
+class User extends Authenticatable  // Activation de la vérification des emails
 
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -58,7 +58,7 @@ class User extends Authenticatable  // ✅ Activation de la vérification des em
     {
         return $this->hasOne(Organizer::class);
     }
- // ✅ Ajout de la relation entre User et Ticket
+ //  Ajout de la relation entre User et Ticket
  public function tickets(): HasMany
  {
      return $this->hasMany(Ticket::class);

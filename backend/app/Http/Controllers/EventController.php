@@ -8,7 +8,7 @@ use App\Models\Event;
 use Illuminate\Support\Facades\Storage;
 class EventController extends Controller
 {
-     // 🟢 1. Création d'un événement
+     // 1. Création d'un événement
      public function store(Request $request)
      {
         if (!Auth::user()->is_organizer) {
@@ -50,7 +50,7 @@ class EventController extends Controller
          return response()->json($event, 201);
      }
 
-     // 🟢 2. Mise à jour d'un événement
+     //  2. Mise à jour d'un événement
      public function update(Request $request, $id)
      {$event = Event::findOrFail($id);
          if (Auth::id() !== $event->organizer_id) {
@@ -96,7 +96,7 @@ class EventController extends Controller
          return response()->json($event, 200);
      }
 
-     // 🟢 3. Suppression d'un événement
+     //  3. Suppression d'un événement
      public function destroy($id)
      {$event = Event::findOrFail($id);
          if (Auth::id() !== $event->organizer_id) {
@@ -107,56 +107,97 @@ class EventController extends Controller
          return response()->json(['message' => 'Événement supprimé'], 200);
      }
        //  Afficher un événement
-    public function show($id) {
-        $event = Event::findOrFail($id);
-        $event->increment('popularity');
-        $event->image_url = $event->image ? asset('storage/' . $event->image) : null;
+  public function show($id)
+{
+    $event = Event::with('organizer')->findOrFail($id);
+    $event->increment('popularity');
 
-        return response()->json($event);
+    $event->image_url = $event->image ? asset('storage/' . $event->image) : null;
+
+    return response()->json([
+        'id' => $event->id,
+        'title' => $event->title,
+        'description' => $event->description,
+        'date' => $event->date,
+        'location' => $event->location,
+        'ticket_limit' => $event->ticket_limit,
+        'ticket_price' => $event->ticket_price,
+        'is_paid' => $event->is_paid,
+        'category' => $event->category,
+        'popularity' => $event->popularity,
+        'image_url' => $event->image_url,
+        'organization_name' => optional($event->organizer)->organization_name,
+    ]);
+}
+
+
+
+ //  1. Recherche, tri et pagination
+public function index(Request $request)
+{
+    $query = Event::with('organizer'); //  charger la relation ici
+
+    //  Filtrage par catégorie
+    if ($request->has('category')) {
+        $query->where('category', $request->category);
     }
 
- // 📌 1. Recherche, tri et pagination
- public function index(Request $request)
- {
-     $query = Event::query();
+    //  Filtrage par lieu
+    if ($request->has('location')) {
+        $query->where('location', 'LIKE', "%{$request->location}%");
+    }
 
-     // 🔹 Filtrage par catégorie
-     if ($request->has('category')) {
-         $query->where('category', $request->category);
-     }
+    //  Filtrage par date
+    if ($request->has('date')) {
+        $query->whereDate('date', $request->date);
+    }
 
-     // 🔹 Filtrage par lieu
-     if ($request->has('location')) {
-         $query->where('location', 'LIKE', "%{$request->location}%");
-     }
+    //  Recherche par mots-clés
+    if ($request->has('keyword')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('title', 'LIKE', "%{$request->keyword}%")
+              ->orWhere('description', 'LIKE', "%{$request->keyword}%");
+        });
+    }
 
-     // 🔹 Filtrage par date
-     if ($request->has('date')) {
-         $query->whereDate('date', $request->date);
-     }
+    //  Trier par popularité, date ou prix
+    if ($request->has('sort_by')) {
+        if ($request->sort_by == 'popularity') {
+            $query->orderBy('popularity', 'desc');
+        } elseif ($request->sort_by == 'date') {
+            $query->orderBy('date', 'asc');
+        } elseif ($request->sort_by == 'ticket_price') {
+            $query->orderBy('ticket_price', 'asc');
+        }
+    }
 
-     // 🔹 Recherche par mots-clés
-     if ($request->has('keyword')) {
-         $query->where('title', 'LIKE', "%{$request->keyword}%")
-               ->orWhere('description', 'LIKE', "%{$request->keyword}%");
-     }
+    //  Pagination (10 résultats par page)
+    $paginatedEvents = $query->paginate(10);
 
-     // 🔹 Trier par popularité, date ou prix
-     if ($request->has('sort_by')) {
-         if ($request->sort_by == 'popularity') {
-             $query->orderBy('popularity', 'desc');
-         } elseif ($request->sort_by == 'date') {
-             $query->orderBy('date', 'asc');
-         } elseif ($request->sort_by == 'ticket_price') {
-             $query->orderBy('ticket_price', 'asc');
-         }
-     }
+    // ⚙️ Transformer les données pour n'afficher que ce qu'on veut
+    $transformed = $paginatedEvents->getCollection()->map(function ($event) {
+        return [
+            'id' => $event->id,
+            'title' => $event->title,
+            'description' => $event->description,
+            'date' => $event->date,
+            'location' => $event->location,
+            'ticket_limit' => $event->ticket_limit,
+            'ticket_price' => $event->ticket_price,
+            'is_paid' => $event->is_paid,
+            'category' => $event->category,
+            'popularity' => $event->popularity,
+            'image_url' => $event->image ? asset('storage/' . $event->image) : null,
+            'organization_name' => optional($event->organizer)->organization_name,
+        ];
+    });
 
-     // 🔹 Pagination (10 résultats par page)
-     $events = $query->paginate(10);
+    //  Remplacer la collection transformée dans la pagination
+    $paginatedEvents->setCollection($transformed);
 
-     return response()->json($events, 200);
- }
+    return response()->json($paginatedEvents);
+}
+
 
 
 
