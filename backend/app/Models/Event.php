@@ -10,11 +10,14 @@ class Event extends Model
 
     protected $fillable = [
         'organizer_id', 'title', 'description', 'date',
-        'location', 'ticket_limit', 'is_paid', 'ticket_price','category','popularity'
+        'location', 'ticket_limit', 'is_paid', 'ticket_price','category','popularity','image'
     ];
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
     }
-
+public function organizer()
+{
+    return $this->belongsTo(\App\Models\Organizer::class, 'organizer_id', 'user_id');
+}
 }

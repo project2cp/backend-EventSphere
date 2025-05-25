@@ -20,7 +20,7 @@ public function updateProfile(Request $request)
         'interests' => 'sometimes|array',
         'profile_photo' => 'sometimes|image|max:2048',
         'phone_number' => 'sometimes|string|max:20',
-        'location' => 'sometimes|string|max:255',    
+        'location' => 'sometimes|string|max:255',
     ]);
 
     if ($request->hasFile('profile_photo')) {

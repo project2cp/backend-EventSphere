@@ -123,5 +123,39 @@ public function buyTicket(Request $request, $eventId)
 
     return response()->json($ticket, 201);
 }
+// Ajoutez cette méthode dans votre TicketController
+public function getUserTickets()
+{
+    $user = Auth::user();
+    
+    $tickets = Ticket::with(['event' => function($query) {
+        $query->select('id', 'title', 'date', 'location');
+    }])
+    ->where('user_id', $user->id)
+    ->get([
+        'id', 
+        'event_id', 
+        'status', 
+        'is_paid', 
+        'created_at', 
+        'qr_code'
+    ]);
 
+    // Formater la réponse
+    $formattedTickets = $tickets->map(function($ticket) {
+        return [
+            'ticket_id' => $ticket->id,
+            'status' => $ticket->status,
+            'purchase_date' => $ticket->created_at->format('Y-m-d H:i'),
+            'qr_code' => $ticket->qr_code ? asset('storage/' . $ticket->qr_code) : null,
+            'event' => [
+                'name' => $ticket->event->title,
+                'date' => $ticket->event->date,
+                'location' => $ticket->event->location
+            ]
+        ];
+    });
+
+    return response()->json(['tickets' => $formattedTickets]);
+}
 }
